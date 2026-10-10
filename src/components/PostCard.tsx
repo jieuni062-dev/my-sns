@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Post } from '../data/samplePosts'
 
 type PostCardProps = {
@@ -26,7 +27,9 @@ function timeAgo(createdAt: string, now: number): string {
 
 function PostCard({ post, now }: PostCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const [photoIndex, setPhotoIndex] = useState(0)
   const isLong = post.content.length > 90
+  const hasMany = post.images.length > 1
 
   return (
     <article className="card sketch">
@@ -42,11 +45,44 @@ function PostCard({ post, now }: PostCardProps) {
         </time>
       </div>
 
-      {/* 사진은 첫 장만 */}
+      {/* 사진이 1장이면 넘기기와 몇 번째 표시 없이 사진만 */}
       <div className="photo sketch">
         <span className="tape" />
-        <img src={post.images[0]} alt={`${post.author}의 사진`} loading="lazy" />
+        {hasMany ? (
+          <>
+            <Swiper
+              grabCursor
+              onSlideChange={(swiper) => setPhotoIndex(swiper.activeIndex)}
+            >
+              {post.images.map((image, i) => (
+                <SwiperSlide key={image}>
+                  <img
+                    src={image}
+                    alt={`${post.author}의 사진 ${i + 1}`}
+                    loading="lazy"
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+            <span className="count sketch">
+              {photoIndex + 1} / {post.images.length}
+            </span>
+          </>
+        ) : (
+          <img
+            src={post.images[0]}
+            alt={`${post.author}의 사진`}
+            loading="lazy"
+          />
+        )}
       </div>
+      {hasMany && (
+        <div className="dots">
+          {post.images.map((image, i) => (
+            <span key={image} className={i === photoIndex ? 'dot on' : 'dot'} />
+          ))}
+        </div>
+      )}
 
       <p className={isLong && !expanded ? 'content clamp' : 'content'}>
         {post.content}
