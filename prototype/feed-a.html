@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>빵지순례 피드 프로토타입 (feed-a · 손그림)</title>
+<style>
+  :root {
+    --cream: #f8f0e3;
+    --cream-deep: #eadccb;
+    --paper: #fffaf1;
+    --ink: #4a2e1c;
+    --ink-soft: #8a6a54;
+    --crust: #d9783a;
+    --butter: #fbe3a6;
+    --blush: #f6b8a0;
+    --wobble-a: 255px 18px 225px 18px / 18px 225px 18px 255px;
+    --wobble-b: 18px 225px 18px 255px / 255px 18px 225px 18px;
+    --hand: "Gaegu", "Nanum Pen Script", "Cafe24 Ssurround", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--cream-deep);
+    color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* 시안 구분 표시 */
+  .variant {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 2;
+    padding: 2px 12px;
+    background: var(--ink);
+    border-radius: 999px;
+    color: var(--paper);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* 휴대폰 화면: 모눈 점이 찍힌 종이 */
+  .phone {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    margin: 0 auto;
+    background-color: var(--cream);
+    background-image: radial-gradient(var(--cream-deep) 1.2px, transparent 1.2px);
+    background-size: 18px 18px;
+  }
+
+  /* 손으로 그린 듯한 테두리: 선을 두 번 겹쳐 그림 */
+  .sketch { position: relative; }
+  .sketch::before,
+  .sketch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--ink);
+    border-radius: var(--wobble-a);
+    filter: url(#wobble);
+    pointer-events: none;
+  }
+  .sketch::after {
+    inset: -2px 1px 1px -2px;
+    border-width: 1px;
+    border-radius: var(--wobble-b);
+    opacity: 0.45;
+  }
+
+  .doodle {
+    fill: var(--butter);
+    stroke: var(--ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* 머리말 */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px 18px;
+    background: var(--cream);
+  }
+  .header::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 4px;
+    height: 6px;
+    background: radial-gradient(circle at 6px -3px, transparent 6px, var(--ink) 6px, var(--ink) 7.5px, transparent 7.5px) 0 0 / 12px 6px repeat-x;
+  }
+  .header h1 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-family: var(--hand);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .header h1 svg {
+    width: 38px;
+    height: 38px;
+    transform: rotate(-10deg);
+  }
+  .header p {
+    margin: 0;
+    font-family: var(--hand);
+    font-size: 12px;
+    text-align: right;
+    color: var(--ink-soft);
+    transform: rotate(-2deg);
+  }
+
+  /* 카드 */
+  .feed { padding: 22px 18px 8px; }
+  .card {
+    margin-bottom: 30px;
+    background: var(--paper);
+    border-radius: var(--wobble-a);
+    box-shadow: 5px 6px 0 var(--butter);
+  }
+  .card:nth-child(odd) { transform: rotate(-0.6deg); }
+  .card:nth-child(even) { transform: rotate(0.5deg); }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+  }
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--hand);
+    font-weight: 700;
+  }
+  .avatar { width: 38px; height: 38px; }
+  .time {
+    font-family: var(--hand);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  /* 사진: 테이프로 붙인 느낌 */
+  .photo {
+    aspect-ratio: 1 / 1;
+    margin: 6px 16px 0;
+    background: var(--cream-deep);
+    border-radius: var(--wobble-b);
+  }
+  .photo::before,
+  .photo::after { border-radius: var(--wobble-b); }
+  .photo::after { border-radius: var(--wobble-a); }
+  .photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--wobble-b);
+  }
+  .tape {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    z-index: 1;
+    width: 78px;
+    height: 20px;
+    margin-left: -39px;
+    background: var(--butter);
+    opacity: 0.85;
+    transform: rotate(-3deg);
+    clip-path: polygon(0 12%, 4% 0, 8% 14%, 12% 0, 100% 6%, 97% 50%, 100% 94%, 12% 100%, 8% 86%, 4% 100%, 0 88%, 3% 50%);
+  }
+  .count {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1;
+    padding: 1px 12px;
+    background: var(--paper);
+    border-radius: var(--wobble-a);
+    font-family: var(--hand);
+    font-size: 13px;
+    font-weight: 700;
+    transform: rotate(4deg);
+  }
+  .count::before,
+  .count::after { border-width: 1.5px; }
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    padding-top: 12px;
+  }
+  .dot {
+    width: 10px;
+    height: 9px;
+    border: 1.5px solid var(--ink);
+    border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  }
+  .dot:nth-child(even) { border-radius: 45% 55% 40% 60% / 60% 40% 55% 45%; }
+  .dot.on { background: var(--crust); }
+
+  /* 본문 */
+  .content {
+    margin: 0;
+    padding: 12px 18px 0;
+    white-space: pre-line;
+    word-break: keep-all;
+  }
+  .content.clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  .more {
+    margin: 4px 18px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink-soft);
+    font-family: var(--hand);
+    font-size: 13px;
+    text-decoration: underline wavy var(--blush);
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  .card-foot { height: 18px; }
+
+  /* 상태 */
+  .states { padding: 0 18px 56px; }
+  .state-label {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+  .state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+    padding: 22px 16px;
+    font-family: var(--hand);
+    text-align: center;
+  }
+  .state p { margin: 0; }
+  .state svg { width: 46px; height: 46px; }
+  .breads { display: flex; gap: 6px; }
+  .breads svg {
+    width: 34px;
+    height: 34px;
+    animation: hop 0.9s ease-in-out infinite;
+  }
+  .breads svg:nth-child(2) { animation-delay: 0.15s; }
+  .breads svg:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes hop {
+    0%, 60%, 100% { transform: translateY(0) rotate(0); }
+    30% { transform: translateY(-8px) rotate(-8deg); }
+  }
+  .state.end p {
+    font-weight: 700;
+    text-decoration: underline wavy var(--crust);
+    text-underline-offset: 6px;
+  }
+  .state.error {
+    background: var(--paper);
+    border-radius: var(--wobble-b);
+  }
+  .state.error::before,
+  .state.error::after {
+    border-style: dashed;
+    border-radius: var(--wobble-b);
+  }
+  .state.error::after { display: none; }
+  .retry {
+    padding: 7px 24px;
+    border: 0;
+    border-radius: var(--wobble-a);
+    background: var(--butter);
+    box-shadow: 3px 4px 0 var(--ink);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .breads svg { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <!-- 손그림 낙서와 삐뚤빼뚤한 선을 만드는 필터 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="wobble">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3"/>
+    </filter>
+    <symbol id="loaf" viewBox="0 0 32 32">
+      <path d="M6 14c-2-6 4-9 10-9s12 3 10 9c-.5 1.5-1.5 2-2 2v9c0 1.200-1 2-2 2H10c-1 0-2-.8-2-2v-9c-.5 0-1.500-.5-2-2z"/>
+      <path d="M13 18.500v1M19 18.500v1M14 22.500q2 2 4 0" fill="none"/>
+    </symbol>
+    <symbol id="loaf-sad" viewBox="0 0 32 32">
+      <path d="M6 14c-2-6 4-9 10-9s12 3 10 9c-.5 1.5-1.5 2-2 2v9c0 1.200-1 2-2 2H10c-1 0-2-.8-2-2v-9c-.5 0-1.500-.5-2-2z"/>
+      <path d="M12 18l2 1M20 18l-2 1M14 24q2-2 4 0M21 21.500v2" fill="none"/>
+    </symbol>
+    <symbol id="baguette" viewBox="0 0 32 32">
+      <path d="M5 25C2 21 19 4 24.500 5.500S29 9 27 11.500C22 17 9 29 5 25z"/>
+      <path d="M11 17l3 3M15 13l3 3M19 9.500l3 3" fill="none"/>
+    </symbol>
+    <symbol id="donut" viewBox="0 0 32 32">
+      <path d="M16 5c7 0 11 4.500 11 11s-4.500 11-11 11S5 22.500 5 16 9.500 5 16 5z"/>
+      <path d="M16 12.500c2.200 0 3.500 1.500 3.500 3.500s-1.500 3.500-3.500 3.500-3.500-1.500-3.500-3.500 1.500-3.500 3.500-3.500z" fill="#fffaf1"/>
+      <path d="M10 10l1.500 1M22 9.500l-1 1.500M9 20l1.500-.5M22.500 21l-1.500-1M16 23.500v1.500" fill="none"/>
+    </symbol>
+  </svg>
+
+  <div class="variant">시안 feed-a</div>
+
+  <div class="phone">
+    <header class="header">
+      <h1><svg class="doodle"><use href="#loaf"/></svg>빵지순례</h1>
+      <p>동네 빵집을 순례하며<br>남기는 사진 기록</p>
+    </header>
+
+    <main class="feed" id="feed"></main>
+
+    <section class="states">
+      <p class="state-label">상태 · 더 불러오는 중</p>
+      <div class="state">
+        <div class="breads">
+          <svg class="doodle"><use href="#loaf"/></svg>
+          <svg class="doodle"><use href="#baguette"/></svg>
+          <svg class="doodle"><use href="#donut"/></svg>
+        </div>
+        <p>다음 빵을 꺼내는 중이에요…</p>
+      </div>
+
+      <p class="state-label">상태 · 더 없음</p>
+      <div class="state end">
+        <svg class="doodle"><use href="#loaf"/></svg>
+        <p>오늘 빵은 모두 나왔어요</p>
+      </div>
+
+      <p class="state-label">상태 · 오류</p>
+      <div class="state error sketch">
+        <svg class="doodle"><use href="#loaf-sad"/></svg>
+        <p>빵을 가져오지 못했어요.</p>
+        <button class="retry" type="button">다시 시도</button>
+      </div>
+    </section>
+  </div>
+
+<script>
+  // 요구사항의 게시물 항목(id, author, content, images, created_at)과 같은 모양의 예시 데이터
+  const posts = [
+    {
+      id: 1,
+      author: "소금빵러버",
+      content: "성수동 골목 빵집 첫 방문. 소금빵이 11시에 나온다고 해서 맞춰 갔어요.",
+      images: [
+        "https://picsum.photos/seed/saltbread/600/600",
+        "https://picsum.photos/seed/bakery/600/600",
+        "https://picsum.photos/seed/croissant/600/600",
+        "https://picsum.photos/seed/oven/600/600"
+      ],
+      created_at: "2026-10-10T11:20:00"
+    },
+    {
+      id: 2,
+      author: "바게트한입",
+      content: "오늘의 수확. 바게트 하나.",
+      images: ["https://picsum.photos/seed/baguette/600/600"],
+      created_at: "2026-10-09T17:05:00"
+    },
+    {
+      id: 3,
+      author: "동네빵순이",
+      content: "망원동에 새로 생긴 빵집을 드디어 다녀왔어요.\n문 열기 20분 전에 도착했는데 벌써 줄이 있더라고요. 크루아상은 겹이 아주 얇고 바삭했고, 버터 향이 진해서 하나만 먹어도 든든했어요. 같이 산 무화과 캄파뉴는 다음 날 아침에 구워 먹었는데 그게 더 맛있었습니다.\n사장님이 빵 나오는 시간을 칠판에 적어 두시니 가기 전에 꼭 확인하세요. 다음에는 식빵을 사러 다시 갈 거예요.",
+      images: [
+        "https://picsum.photos/seed/campagne/600/600",
+        "https://picsum.photos/seed/fig/600/600"
+      ],
+      created_at: "2026-10-07T09:40:00"
+    }
+  ];
+
+  const avatars = ["donut", "loaf", "baguette"];
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
+
+  function doodle(name, className) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("class", "doodle " + className);
+    const use = document.createElementNS(SVG_NS, "use");
+    use.setAttribute("href", "#" + name);
+    svg.append(use);
+    return svg;
+  }
+
+  function formatDate(value) {
+    const d = new Date(value);
+    return (d.getMonth() + 1) + "월 " + d.getDate() + "일";
+  }
+
+  function renderCard(post) {
+    const card = el("article", "card sketch");
+
+    const head = el("div", "card-head");
+    const author = el("div", "author");
+    author.append(doodle(avatars[post.id % avatars.length], "avatar"), el("span", "", post.author));
+    head.append(author, el("time", "time", formatDate(post.created_at)));
+    card.append(head);
+
+    // 넘기기는 동작하지 않음. 첫 번째 사진만 보여주고 위치 표시는 모양만
+    const photo = el("div", "photo sketch");
+    const img = el("img");
+    img.src = post.images[0];
+    img.alt = post.author + "의 사진";
+    photo.append(el("span", "tape"), img);
+    card.append(photo);
+
+    if (post.images.length > 1) {
+      photo.append(el("span", "count sketch", "1 / " + post.images.length));
+      const dots = el("div", "dots");
+      post.images.forEach(function (_, i) {
+        dots.append(el("span", i === 0 ? "dot on" : "dot"));
+      });
+      card.append(dots);
+    }
+
+    const content = el("p", "content", post.content);
+    card.append(content);
+
+    if (post.content.length > 90) {
+      content.classList.add("clamp");
+      const more = el("button", "more", "더 보기");
+      more.type = "button";
+      more.addEventListener("click", function () {
+        const clamped = content.classList.toggle("clamp");
+        more.textContent = clamped ? "더 보기" : "접기";
+      });
+      card.append(more);
+    }
+
+    card.append(el("div", "card-foot"));
+    return card;
+  }
+
+  const feed = document.getElementById("feed");
+  posts.forEach(function (post) {
+    feed.append(renderCard(post));
+  });
+</script>
+</body>
+</html>

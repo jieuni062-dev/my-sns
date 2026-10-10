@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>빵지순례 피드 프로토타입</title>
+<style>
+  :root {
+    --cream: #f6eee3;
+    --cream-deep: #eadccb;
+    --paper: #fbf6ee;
+    --brown: #4a2e1c;
+    --brown-soft: #8a6a54;
+    --crust: #d9783a;
+    --crust-deep: #a9541f;
+    --butter: #fbe3a6;
+    --line: #d9c4ad;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--cream-deep);
+    color: var(--brown);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* 휴대폰 화면 */
+  .phone {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    margin: 0 auto;
+    background: var(--cream);
+  }
+
+  /* 머리말 */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    background: var(--cream);
+    border-bottom: 2px dashed var(--line);
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--crust);
+  }
+  .header h1 span {
+    display: inline-block;
+    margin-right: 6px;
+    transform: rotate(-12deg);
+  }
+  .header p {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-align: right;
+    color: var(--brown-soft);
+  }
+
+  /* 카드 */
+  .feed { padding: 20px 16px 8px; }
+  .card {
+    margin-bottom: 24px;
+    background: var(--paper);
+    border-radius: 24px;
+    box-shadow: 0 4px 0 var(--line);
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+  }
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+  }
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--butter);
+    font-size: 18px;
+  }
+  .time {
+    font-size: 12px;
+    color: var(--brown-soft);
+  }
+
+  /* 사진 */
+  .photo {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    margin: 0 12px;
+    overflow: hidden;
+    background: var(--cream-deep);
+    border-radius: 18px;
+  }
+  .photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .count {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 2px 12px;
+    background: var(--paper);
+    border-radius: 999px;
+    color: var(--crust);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 12px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--line);
+  }
+  .dot.on {
+    width: 20px;
+    background: var(--crust);
+  }
+
+  /* 본문 */
+  .content {
+    margin: 0;
+    padding: 12px 14px 0;
+    white-space: pre-line;
+    word-break: keep-all;
+  }
+  .content.clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  .more {
+    margin: 4px 14px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--brown-soft);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .card-foot { height: 14px; }
+
+  /* 상태 */
+  .states { padding: 0 16px 40px; }
+  .state-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--brown-soft);
+  }
+  .state-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--brown-soft);
+  }
+  .state p { margin: 0; }
+  .state-icon { font-size: 32px; line-height: 1; }
+  .breads { display: flex; gap: 8px; font-size: 24px; line-height: 1; }
+  .breads span { animation: hop 0.9s ease-in-out infinite; }
+  .breads span:nth-child(2) { animation-delay: 0.15s; }
+  .breads span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes hop {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+  }
+  .state.end p {
+    padding: 8px 20px;
+    background: var(--butter);
+    border-radius: 999px;
+    color: var(--brown);
+    font-weight: 700;
+  }
+  .state.error {
+    background: var(--paper);
+    border: 2px dashed var(--line);
+    border-radius: 24px;
+    color: var(--brown);
+  }
+  .retry {
+    padding: 9px 26px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--crust);
+    box-shadow: 0 3px 0 var(--crust-deep);
+    color: var(--paper);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .breads span { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <header class="header">
+      <h1><span>🥐</span>빵지순례</h1>
+      <p>동네 빵집을 순례하며<br>남기는 사진 기록</p>
+    </header>
+
+    <main class="feed" id="feed"></main>
+
+    <section class="states">
+      <p class="state-label">상태 · 더 불러오는 중</p>
+      <div class="state">
+        <div class="breads"><span>🥐</span><span>🥖</span><span>🥨</span></div>
+        <p>다음 빵을 꺼내는 중이에요…</p>
+      </div>
+
+      <p class="state-label">상태 · 더 없음</p>
+      <div class="state end">
+        <div class="state-icon">🧺</div>
+        <p>오늘 빵은 모두 나왔어요</p>
+      </div>
+
+      <p class="state-label">상태 · 오류</p>
+      <div class="state error">
+        <div class="state-icon">🥺</div>
+        <p>빵을 가져오지 못했어요.</p>
+        <button class="retry" type="button">다시 시도</button>
+      </div>
+    </section>
+  </div>
+
+<script>
+  // 요구사항의 게시물 항목(id, author, content, images, created_at)과 같은 모양의 예시 데이터
+  const posts = [
+    {
+      id: 1,
+      author: "소금빵러버",
+      content: "성수동 골목 빵집 첫 방문. 소금빵이 11시에 나온다고 해서 맞춰 갔어요.",
+      images: [
+        "https://picsum.photos/seed/saltbread/600/600",
+        "https://picsum.photos/seed/bakery/600/600",
+        "https://picsum.photos/seed/croissant/600/600",
+        "https://picsum.photos/seed/oven/600/600"
+      ],
+      created_at: "2026-10-10T11:20:00"
+    },
+    {
+      id: 2,
+      author: "바게트한입",
+      content: "오늘의 수확. 바게트 하나.",
+      images: ["https://picsum.photos/seed/baguette/600/600"],
+      created_at: "2026-10-09T17:05:00"
+    },
+    {
+      id: 3,
+      author: "동네빵순이",
+      content: "망원동에 새로 생긴 빵집을 드디어 다녀왔어요.\n문 열기 20분 전에 도착했는데 벌써 줄이 있더라고요. 크루아상은 겹이 아주 얇고 바삭했고, 버터 향이 진해서 하나만 먹어도 든든했어요. 같이 산 무화과 캄파뉴는 다음 날 아침에 구워 먹었는데 그게 더 맛있었습니다.\n사장님이 빵 나오는 시간을 칠판에 적어 두시니 가기 전에 꼭 확인하세요. 다음에는 식빵을 사러 다시 갈 거예요.",
+      images: [
+        "https://picsum.photos/seed/campagne/600/600",
+        "https://picsum.photos/seed/fig/600/600"
+      ],
+      created_at: "2026-10-07T09:40:00"
+    }
+  ];
+
+  const avatars = ["🥐", "🥯", "🥖", "🍞"];
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
+
+  function formatDate(value) {
+    const d = new Date(value);
+    return (d.getMonth() + 1) + "월 " + d.getDate() + "일";
+  }
+
+  function renderCard(post) {
+    const card = el("article", "card");
+
+    const head = el("div", "card-head");
+    const author = el("div", "author");
+    author.append(el("span", "avatar", avatars[post.id % avatars.length]), el("span", "", post.author));
+    head.append(author, el("time", "time", formatDate(post.created_at)));
+    card.append(head);
+
+    // 넘기기는 동작하지 않음. 첫 번째 사진만 보여주고 위치 표시는 모양만
+    const photo = el("div", "photo");
+    const img = el("img");
+    img.src = post.images[0];
+    img.alt = post.author + "의 사진";
+    photo.append(img);
+    card.append(photo);
+
+    if (post.images.length > 1) {
+      photo.append(el("span", "count", "1 / " + post.images.length));
+      const dots = el("div", "dots");
+      post.images.forEach(function (_, i) {
+        dots.append(el("span", i === 0 ? "dot on" : "dot"));
+      });
+      card.append(dots);
+    }
+
+    const content = el("p", "content", post.content);
+    card.append(content);
+
+    if (post.content.length > 90) {
+      content.classList.add("clamp");
+      const more = el("button", "more", "더 보기");
+      more.type = "button";
+      more.addEventListener("click", function () {
+        const clamped = content.classList.toggle("clamp");
+        more.textContent = clamped ? "더 보기" : "접기";
+      });
+      card.append(more);
+    }
+
+    card.append(el("div", "card-foot"));
+    return card;
+  }
+
+  const feed = document.getElementById("feed");
+  posts.forEach(function (post) {
+    feed.append(renderCard(post));
+  });
+</script>
+</body>
+</html>

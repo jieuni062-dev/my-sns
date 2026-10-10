@@ -1,0 +1,12 @@
+# 작업 규칙
+- Vite + React + TypeScript 프로젝트임
+- 컴포넌트는 src/components/ 에 .tsx 로
+- 한 번에 파일 하나만 작업할 것
+- 새 라이브러리는 설치 전에 이유를 설명하고 허락받을 것
+- 캐러셀은 swiper 라이브러리로만 만들 것
+- 무한 스크롤용 라이브러리는 설치하지 말 것
+- any 타입을 쓰지 말 것
+- CSS 는 src/App.css 한 곳에만
+- prototype/ 폴더의 HTML 은 디자인 시안임. src 에서 불러오지 말 것
+- 화면은 휴대폰 폭(가로 430px 이하) 기준
+- 키는 .env.local 에서만, sb_secret_ · service_role 키 금지
