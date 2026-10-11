@@ -20,6 +20,10 @@ function App() {
           <path d="M6 14c-2-6 4-9 10-9s12 3 10 9c-.5 1.5-1.5 2-2 2v9c0 1.200-1 2-2 2H10c-1 0-2-.8-2-2v-9c-.5 0-1.500-.5-2-2z" />
           <path d="M13 18.500v1M19 18.500v1M14 22.500q2 2 4 0" fill="none" />
         </symbol>
+        <symbol id="loaf-sad" viewBox="0 0 32 32">
+          <path d="M6 14c-2-6 4-9 10-9s12 3 10 9c-.5 1.5-1.5 2-2 2v9c0 1.200-1 2-2 2H10c-1 0-2-.8-2-2v-9c-.5 0-1.500-.5-2-2z" />
+          <path d="M12 18l2 1M20 18l-2 1M14 24q2-2 4 0M21 21.500v2" fill="none" />
+        </symbol>
         <symbol id="baguette" viewBox="0 0 32 32">
           <path d="M5 25C2 21 19 4 24.500 5.500S29 9 27 11.500C22 17 9 29 5 25z" />
           <path d="M11 17l3 3M15 13l3 3M19 9.500l3 3" fill="none" />
