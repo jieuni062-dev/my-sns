@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- 배경은 cream 으로 꽉 채운다. 둥글게 잘려도 빵이 안 잘리게 가운데에 여유를 둠 -->
+  <rect width="512" height="512" fill="#f8f0e3" />
+  <g
+    transform="translate(48 48) scale(13)"
+    stroke="#4a2e1c"
+    stroke-width="1.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <!-- 머리말의 식빵 낙서와 같은 모양 -->
+    <path
+      d="M6 14c-2-6 4-9 10-9s12 3 10 9c-.5 1.5-1.5 2-2 2v9c0 1.200-1 2-2 2H10c-1 0-2-.8-2-2v-9c-.5 0-1.500-.5-2-2z"
+      fill="#fbe3a6"
+    />
+    <path d="M13 18.500v1M19 18.500v1M14 22.500q2 2 4 0" fill="none" />
+  </g>
+</svg>

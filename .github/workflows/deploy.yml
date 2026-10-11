@@ -32,9 +32,9 @@ jobs:
       - id: pages
         uses: actions/configure-pages@v5
 
-      # 저장소 이름이 주소 경로에 붙으므로(/저장소이름/) base 를 맞춰 준다
+      # 주소 경로(/my-sns/)는 vite.config.ts 의 base 에 적혀 있다
       # 키는 저장소에 올리지 않고 GitHub Secrets 에서 읽는다
-      - run: npm run build -- --base="${{ steps.pages.outputs.base_path }}/"
+      - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
